@@ -17,10 +17,16 @@ def data():
 
 def forward():
     X_train, X_test, Y_train, Y_test = dp.get_data()
+    Weights = nn.init_weights(X_train.shape[1], X_train.shape[1])
+    forward_info, loss = nn.forward_loss(X_train, Y_train, Weights)
+
+    for key in forward_info.keys():
+        print(f'forward_info[{key}].shape: {forward_info[key].shape}')
+    print(f'loss: {loss}')
     
 
 def test():
-    data()
-    #forward()
+    #data()
+    forward()
 
 test()
