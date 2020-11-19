@@ -37,3 +37,35 @@ def forward_loss(observations: np.ndarray, targets: np.ndarray, weights: Dict[st
 
     return forward_info, loss
 
+def loss_gradients(forward_info: Dict[str, np.ndarray],
+                   weights: Dict[str, np.ndarray])\
+                  -> Dict[str, np.ndarray]:
+    '''
+    Compute partial derivatives of loss w.r.t. nn params
+    '''
+
+    dLdP = -2*(forward_info['Y'] - forward_info['P']) #1
+    dPdM2 = np.ones_like(forward_info['M2'])#2
+    dLdM2 = dLdP*dPdM2
+    dM2dO1 = weights['W2'].T #3
+    dO1dN1 = sigmoid(forward_info['N1'])*(1-sigmoid(forward_info['N1'])) #4
+    dN1dM1 = np.ones_like(forward_info['M1']) #5
+    dM1dW1 = forward_info['X'].T #6
+    dLdN1 = dLdM2.dot(dM2dO1)*dO1dN1 #1,2,3,4
+    dN1dB1 = np.ones_like(weights['B1'])
+    dM2dW2 = forward_info['O1'].T
+    dPdB2 = np.ones_like(weights['B2'])
+
+    dLdW1 = dM1dW1.dot(dLdN1*dN1dM1) 
+    dLdB1 = (dLdN1*dN1dB1).sum(axis=0)
+    dLdW2 = dM2dW2.dot(dLdM2)
+    dLdB2 = (dLdP*dPdB2).sum(axis=0)
+
+
+    loss_gradients: Dict[str, np.ndarray] = {}
+    loss_gradients['W1'] = dLdW1
+    loss_gradients['B1'] = dLdB1 
+    loss_gradients['W2'] = dLdW2
+    loss_gradients['B2'] = dLdB2
+
+    return loss_gradients
