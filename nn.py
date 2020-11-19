@@ -41,7 +41,7 @@ def forward_loss(observations: np.ndarray, targets: np.ndarray, weights: Dict[st
     O1 = sigmoid(N1)
     M2 = np.dot(O1, weights['W2'])
     predictions = M2 + weights['B2']
-    loss = np.mean(np.power(targets - predictions, 2))
+    loss = np.sqrt(np.mean(np.power(targets - predictions, 2)))
 
     forward_info: Dict[str, np.ndarray] = {}
     forward_info['X'] = observations
@@ -98,8 +98,8 @@ def predict(X: np.ndarray, weights: Dict[str, np.ndarray]) -> np.ndarray:
 
 def train(X_train: np.ndarray, Y_train: np.ndarray,
           X_test: np.ndarray, Y_test: np.ndarray,
-          n_iter = int = 1000, test_every: int = 1000,
-          learning_rate: float = 0.01, hidden_size=13, batch_size: int = 100,
+          n_iter: int = 1000, test_every: int = 1000,
+          learning_rate: float = 0.01, hidden_size: int = 13, batch_size: int = 100,
           return_losses: bool = False, return_weights: bool = False,
           return_scores: bool = False, seed: int = 0):
 
@@ -109,7 +109,7 @@ def train(X_train: np.ndarray, Y_train: np.ndarray,
     start = 0
     losses = []
     val_scores = []
-    weights = init_weights(X.shape[1], hidden_size)
+    weights = init_weights(X_train.shape[1], hidden_size)
     X_train, Y_train = permute_data(X_train, Y_train)
     
     for i in range(n_iter):
@@ -135,10 +135,11 @@ def train(X_train: np.ndarray, Y_train: np.ndarray,
         if return_scores:
             if i%(test_every-1)==0 and i>0:
                 preds = predict(X_test, weights)
-                val_scores.append(r2_score(preds, y_test))
+                val_scores.append(r2_score(preds, Y_test))
     
     if return_weights:
         return losses, weights, val_scores
     else:
         return None
+
 
