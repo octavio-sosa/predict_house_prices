@@ -17,16 +17,25 @@ def data():
 
 def forward():
     X_train, X_test, Y_train, Y_test = dp.get_data()
-    Weights = nn.init_weights(X_train.shape[1], X_train.shape[1])
-    forward_info, loss = nn.forward_loss(X_train, Y_train, Weights)
+    weights = nn.init_weights(X_train.shape[1], X_train.shape[1])
+    forward_info, loss = nn.forward_loss(X_train, Y_train, weights)
 
     for key in forward_info.keys():
         print(f'forward_info[{key}].shape: {forward_info[key].shape}')
     print(f'loss: {loss}')
     
+def gradients():
+    X_train, X_test, Y_train, Y_test = dp.get_data()
+    weights = nn.init_weights(X_train.shape[1], X_train.shape[1])
+    forward_info, loss = nn.forward_loss(X_train, Y_train, weights)
+    gradients = nn.loss_gradients(forward_info, weights)
+
+    for key in gradients.keys():
+        print(f'gradients[{key}].shape: {gradients[key].shape}')
 
 def test():
     #data()
-    forward()
+    #forward()
+    gradients()
 
 test()
