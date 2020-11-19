@@ -4,6 +4,22 @@ from typing import Dict, Tuple
 def sigmoid(x: np.ndarray) -> np.ndarray:
     return 1/(1+np.exp(-1.0*x))
 
+def permute_data(X: np.ndarray, Y: np.ndarray):
+    perm = np.random.permutation(X.shape[0])
+    return X[perm], Y[perm]
+
+def generate_batch(X: np.ndarray, Y: np.ndarray,
+                   start: int = 0,
+                   batch_size: int = 10):
+    assert X.ndim == Y.ndim == 2
+
+    # resize last batch_size
+    if start+batch_size > X.shape[0]:
+        batch_size = X.shape[0]-start
+
+    X_batch, Y_batch = X[start:start+batch_size], Y[start:start+batch_size]
+    return X_batch, Y_batch
+
 def init_weights(num_features: int, num_weight_combos: int)\
                 -> Dict[str, np.ndarray]:
     '''
@@ -69,3 +85,15 @@ def loss_gradients(forward_info: Dict[str, np.ndarray],
     loss_gradients['B2'] = dLdB2
 
     return loss_gradients
+
+def predict(X: np.ndarray, weights: Dict[str, np.ndarray]) -> np.ndarray:
+    M1 = X.dot(weights['W1'])
+    N1 = M1+weights['B1']
+    O1 = sigmoid(N1)
+    M2 = O1.dot(weights['W2'])
+    P = M2+weights['B2']
+
+    return P
+
+
+
