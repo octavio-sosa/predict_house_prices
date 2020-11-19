@@ -1,5 +1,6 @@
 import numpy as np
 from typing import Dict, Tuple
+from sklearn.metrics import r2_score
 
 def sigmoid(x: np.ndarray) -> np.ndarray:
     return 1/(1+np.exp(-1.0*x))
@@ -95,5 +96,49 @@ def predict(X: np.ndarray, weights: Dict[str, np.ndarray]) -> np.ndarray:
 
     return P
 
+def train(X_train: np.ndarray, Y_train: np.ndarray,
+          X_test: np.ndarray, Y_test: np.ndarray,
+          n_iter = int = 1000, test_every: int = 1000,
+          learning_rate: float = 0.01, hidden_size=13, batch_size: int = 100,
+          return_losses: bool = False, return_weights: bool = False,
+          return_scores: bool = False, seed: int = 0):
 
+    if seed:
+        np.random.seed(seed)
+
+    start = 0
+    losses = []
+    val_scores = []
+    weights = init_weights(X.shape[1], hidden_size)
+    X_train, Y_train = permute_data(X_train, Y_train)
+    
+    for i in range(n_iter):
+        #Generate batch
+        if start >= X_train.shape[0]:
+            X_train, Y_train = permute_data(X_train, Y_train)
+            start = 0
+
+        X_batch, Y_batch = generate_batch(X_train, Y_train, start, batch_size)
+        start += batch_size
+
+        # Train
+        forward_info, loss = forward_loss(X_batch, Y_batch, weights)
+        loss_grads = loss_gradients(forward_info, weights)
+        
+        for key in weights.keys():
+            weights[key] -= learning_rate*loss_grads[key]
+
+        # append eval stats
+        if return_losses:
+            losses.append(loss)
+
+        if return_scores:
+            if i%(test_every-1)==0 and i>0:
+                preds = predict(X_test, weights)
+                val_scores.append(r2_score(preds, y_test))
+    
+    if return_weights:
+        return losses, weights, val_scores
+    else:
+        return None
 
